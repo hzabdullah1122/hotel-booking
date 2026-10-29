@@ -1,0 +1,226 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #f4f6f9;
+  --color-card: #ffffff;
+  --color-line: #e3e7ed;
+  --color-navy: #0f1b2d;
+  --color-navy-2: #1b2b45;
+  --color-amber: #f5a524;
+  --color-amber-dark: #d98a0b;
+  --color-ink: #101828;
+  --color-mute: #5f6b7a;
+  --color-good: #12805c;
+  --color-bad: #c2352b;
+
+  --font-display: var(--font-bricolage), system-ui, sans-serif;
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+.field {
+  width: 100%;
+  background: #fff;
+  border: 1px solid var(--color-line);
+  border-radius: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.92rem;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field:focus {
+  border-color: var(--color-navy);
+  box-shadow: 0 0 0 3px rgb(15 27 45 / 0.08);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.3rem;
+  border-radius: 0.6rem;
+  font-weight: 700;
+  font-size: 0.92rem;
+  transition: background 0.15s, transform 0.1s;
+  cursor: pointer;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn-amber {
+  background: var(--color-amber);
+  color: var(--color-navy);
+}
+.btn-amber:hover {
+  background: var(--color-amber-dark);
+}
+.btn-navy {
+  background: var(--color-navy);
+  color: #fff;
+}
+.btn-navy:hover {
+  background: var(--color-navy-2);
+}
+.btn-ghost {
+  border: 1.5px solid var(--color-navy);
+  color: var(--color-navy);
+}
+.btn-ghost:hover {
+  background: var(--color-navy);
+  color: #fff;
+}
+
+.card {
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  border-radius: 1rem;
+}
+
+.score {
+  background: var(--color-navy);
+  color: #fff;
+  font-weight: 800;
+  border-radius: 0.5rem 0.5rem 0.5rem 0;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.9rem;
+}
+
+/* ---------- Cursors ---------- */
+/* Tailwind's reset leaves buttons with the default arrow, so set them once for the whole site */
+a[href],
+button,
+summary,
+select,
+label[for],
+[role="button"],
+[role="menuitem"],
+[role="option"],
+[role="tab"],
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"],
+input[type="file"],
+input[type="file"]::file-selector-button {
+  cursor: pointer;
+}
+input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="search"], textarea {
+  cursor: text;
+}
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled,
+[aria-disabled="true"],
+[disabled] {
+  cursor: not-allowed;
+}
+label:has(input:disabled) {
+  cursor: not-allowed;
+}
+
+/* ---------- Photo hover: veil + sliding arrow (no zoom, no shadow) ---------- */
+.peek-veil {
+  position: absolute;
+  inset: 0;
+  background: rgb(15 27 45 / 0);
+  transition: background 0.3s;
+  pointer-events: none;
+}
+.peek-chip {
+  position: absolute;
+  right: 0.9rem;
+  bottom: 0.9rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-amber);
+  color: var(--color-navy);
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.25s, transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+.group:hover .peek-veil,
+.group:focus-visible .peek-veil { background: rgb(15 27 45 / 0.28); }
+.group:hover .peek-chip,
+.group:focus-visible .peek-chip { opacity: 1; transform: translateX(0); }
+.card-link { transition: border-color 0.2s; }
+.card-link:hover { border-color: rgb(15 27 45 / 0.45); }
+
+/* ---------- Loading shimmer ---------- */
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+.sk {
+  background: linear-gradient(100deg, #e6eaf0 30%, #f7f9fb 50%, #e6eaf0 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
+/* ---------- Hero motion ---------- */
+@keyframes bar-fill {
+  from { width: 0; }
+  to { width: 100%; }
+}
+.bar-fill { animation: bar-fill linear forwards; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(18px) scale(0.92); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes float-a {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+@keyframes float-b {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(12px); }
+}
+@keyframes kenburns {
+  from { transform: scale(1); }
+  to { transform: scale(1.12); }
+}
+@keyframes word-in {
+  from { opacity: 0; transform: translateY(70%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes ping-dot {
+  0% { box-shadow: 0 0 0 0 rgb(245 165 36 / 0.6); }
+  100% { box-shadow: 0 0 0 10px rgb(245 165 36 / 0); }
+}
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-40px, 30px) scale(1.12); }
+}
+
+.rise { opacity: 0; animation: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) forwards; }
+.pop-in { opacity: 0; animation: pop-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+.float-a { animation: float-a 6s ease-in-out infinite; }
+.float-b { animation: float-b 7s ease-in-out infinite; }
+.kenburns { animation: kenburns 14s ease-in-out infinite alternate; }
+.word-in { display: inline-block; animation: word-in 0.55s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.ping-dot { animation: ping-dot 1.8s ease-out infinite; }
+.drift { animation: drift 16s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .pop-in { opacity: 1; animation: none; }
+  .float-a, .float-b, .kenburns, .word-in, .ping-dot, .drift, .sk { animation: none; }
+  .bar-fill { animation: none; width: 100%; }
+}
