@@ -1,6 +1,7 @@
 import { Bricolage_Grotesque, Manrope } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
+import { ToastProvider } from "@/components/Toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -16,11 +17,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${bricolage.variable} ${manrope.variable}`}>
       <body className="min-h-screen flex flex-col antialiased">
-        <AuthProvider>
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </AuthProvider>
+        </ToastProvider>
       </body>
     </html>
   );

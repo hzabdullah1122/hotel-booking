@@ -8,6 +8,7 @@ import Select from "@/components/Select";
 import { formatPKR, fmtDay } from "@/lib/data";
 import { api } from "@/lib/api";
 import { useApi } from "@/lib/useApi";
+import { useToast } from "@/components/Toast";
 import { IconGrid, IconBed, IconCalendar, IconPlus } from "@/components/Icons";
 
 const statusStyle = {
@@ -17,20 +18,21 @@ const statusStyle = {
   cancelled: "bg-bad/10 text-bad",
 };
 
-function HotelRooms({ hotel, onChanged, onError }) {
+function HotelRooms({ hotel, onChanged }) {
+  const toast = useToast();
   const [edit, setEdit] = useState(false);
   const [rooms, setRooms] = useState([]);
   const [asking, setAsking] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const call = async (fn) => {
-    onError("");
+  const call = async (fn, done) => {
     setBusy(true);
     try {
       await fn();
+      if (done) toast.success(done, "Saved");
       onChanged();
     } catch (e) {
-      onError(e.message);
+      toast.error(e.message, "Could not save");
     } finally {
       setBusy(false);
       setAsking(false);
@@ -49,10 +51,10 @@ function HotelRooms({ hotel, onChanged, onError }) {
       const roomTypes = rooms.map(({ name, beds, size, perks, price, count }) => ({ name, beds, size, perks, price: Number(price), count: Number(count) }));
       await api(`/api/hotels/${hotel.id}`, { method: "PUT", body: { roomTypes } });
       setEdit(false);
-    });
+    }, "Room details updated.");
   const togglePublished = () =>
-    call(() => api(`/api/hotels/${hotel.id}`, { method: "PUT", body: { published: !hotel.published } }));
-  const remove = () => call(() => api(`/api/hotels/${hotel.id}`, { method: "DELETE" }));
+    call(() => api(`/api/hotels/${hotel.id}`, { method: "PUT", body: { published: !hotel.published } }), hotel.published ? "Hidden from guests." : "Visible to guests again.");
+  const remove = () => call(() => api(`/api/hotels/${hotel.id}`, { method: "DELETE" }), "The property was deleted.");
 
   return (
     <div>
@@ -117,7 +119,7 @@ function HotelRooms({ hotel, onChanged, onError }) {
 function Panel() {
   const [tab, setTab] = useState("overview");
   const [hotelId, setHotelId] = useState("");
-  const [err, setErr] = useState("");
+  const toast = useToast();
 
   const mine = useApi("/api/hotels/mine");
   const scope = hotelId ? `?hotelId=${hotelId}` : "";
@@ -128,14 +130,14 @@ function Panel() {
   const selected = hotels.find((h) => h.id === hotelId) || hotels[0];
 
   const setStatus = async (id, status) => {
-    setErr("");
     try {
       await api(`/api/bookings/${id}/status`, { method: "PATCH", body: { status } });
+      toast.success(status === "confirmed" ? "The guest has been notified." : "The booking was cancelled.", status === "confirmed" ? "Booking confirmed" : "Booking cancelled");
       bookings.reload();
       stats.reload();
       mine.reload();
     } catch (e) {
-      setErr(e.message);
+      toast.error(e.message, "Could not update booking");
     }
   };
 
@@ -237,8 +239,6 @@ function Panel() {
           )}
         </div>
 
-        {err && <p className="mt-5 rounded-lg bg-bad/10 text-bad text-sm font-semibold px-4 py-3">{err}</p>}
-
         {tab === "overview" && (
           <>
             <div className="mt-7 grid grid-cols-2 xl:grid-cols-4 gap-4">
@@ -274,7 +274,7 @@ function Panel() {
         {tab === "rooms" && (
           <div className="mt-7 space-y-8">
             {(hotelId ? [selected] : hotels).map((h) => (
-              <HotelRooms key={h.id} hotel={h} onChanged={() => { mine.reload(); stats.reload(); }} onError={setErr} />
+              <HotelRooms key={h.id} hotel={h} onChanged={() => { mine.reload(); stats.reload(); }} />
             ))}
           </div>
         )}

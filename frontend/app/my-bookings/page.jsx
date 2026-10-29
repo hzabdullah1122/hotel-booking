@@ -7,6 +7,7 @@ import { TripsSkeleton } from "@/components/Skeleton";
 import { formatPKR, fmtDay } from "@/lib/data";
 import { api, imgUrl } from "@/lib/api";
 import { useApi } from "@/lib/useApi";
+import { useToast } from "@/components/Toast";
 import { IconPin } from "@/components/Icons";
 
 const badge = {
@@ -18,17 +19,17 @@ const badge = {
 
 function Trips() {
   const { data, error, loading, reload } = useApi("/api/bookings/mine");
-  const [err, setErr] = useState("");
+  const toast = useToast();
   const [asking, setAsking] = useState(null); // booking id waiting for a yes / no
 
   const cancel = async (id) => {
-    setErr("");
     setAsking(null);
     try {
       await api(`/api/bookings/${id}/status`, { method: "PATCH", body: { status: "cancelled" } });
+      toast.success("Your booking was cancelled.", "Booking cancelled");
       reload();
     } catch (e) {
-      setErr(e.message);
+      toast.error(e.message, "Could not cancel");
     }
   };
 
@@ -48,7 +49,6 @@ function Trips() {
 
   return (
     <div className="mt-8 space-y-5">
-      {err && <p className="rounded-lg bg-bad/10 text-bad text-sm font-semibold px-4 py-3">{err}</p>}
       {items.map((b) => {
         const [label, cls] = badge[b.displayStatus] || badge.pending;
         const canCancel = (b.status === "pending" || b.status === "confirmed") && new Date(b.checkIn) > new Date();

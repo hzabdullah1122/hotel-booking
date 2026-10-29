@@ -7,6 +7,7 @@ import PasswordInput from "@/components/PasswordInput";
 import { shrinkImage } from "@/lib/image";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useToast } from "@/components/Toast";
 
 const lab = "block text-xs font-bold text-mute mb-1.5";
 
@@ -15,7 +16,7 @@ function ProfileForm() {
   const [name, setName] = useState(user.name);
   const [file, setFile] = useState(null);
   const [removed, setRemoved] = useState(false);
-  const [msg, setMsg] = useState(null); // { ok, text }
+  const toast = useToast();
   const [busy, setBusy] = useState(false);
 
   const preview = useMemo(() => (file ? URL.createObjectURL(file) : ""), [file]);
@@ -30,10 +31,9 @@ function ProfileForm() {
     e.target.value = "";
     if (!picked) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(picked.type) || picked.size > 15 * 1024 * 1024) {
-      setMsg({ ok: false, text: "Use a JPG, PNG or WebP image under 15 MB." });
+      toast.error("Use a JPG, PNG or WebP image under 15 MB.", "Photo not added");
       return;
     }
-    setMsg(null);
     setFile(await shrinkImage(picked, { maxSide: 512 }));
     setRemoved(false);
   };
@@ -41,7 +41,6 @@ function ProfileForm() {
   const save = async (e) => {
     e.preventDefault();
     setBusy(true);
-    setMsg(null);
     try {
       const form = new FormData();
       form.append("name", name.trim());
@@ -52,9 +51,9 @@ function ProfileForm() {
       setName(updated.name);
       setFile(null);
       setRemoved(false);
-      setMsg({ ok: true, text: "Profile updated." });
+      toast.success("Your profile was updated.", "Saved");
     } catch (err) {
-      setMsg({ ok: false, text: err.message });
+      toast.error(err.message, "Could not save profile");
     } finally {
       setBusy(false);
     }
@@ -85,9 +84,6 @@ function ProfileForm() {
         <label className={lab}>Email</label>
         <input className="field opacity-60" value={user.email} disabled />
       </div>
-      {msg && (
-        <p className={`rounded-lg text-sm font-semibold px-4 py-3 ${msg.ok ? "bg-good/10 text-good" : "bg-bad/10 text-bad"}`}>{msg.text}</p>
-      )}
       <button disabled={!changed || !valid || busy} className="btn btn-amber !px-8 disabled:opacity-40 disabled:cursor-not-allowed">
         {busy ? "Saving…" : "Save changes"}
       </button>
@@ -98,20 +94,19 @@ function ProfileForm() {
 function PasswordForm() {
   const [cur, setCur] = useState("");
   const [next, setNext] = useState("");
-  const [msg, setMsg] = useState(null);
+  const toast = useToast();
   const [busy, setBusy] = useState(false);
 
   const save = async (e) => {
     e.preventDefault();
     setBusy(true);
-    setMsg(null);
     try {
       await api("/api/auth/password", { method: "PUT", body: { current: cur, next } });
       setCur("");
       setNext("");
-      setMsg({ ok: true, text: "Password changed." });
+      toast.success("Your password was changed.", "Password updated");
     } catch (err) {
-      setMsg({ ok: false, text: err.message });
+      toast.error(err.message, "Could not change password");
     } finally {
       setBusy(false);
     }
@@ -130,9 +125,6 @@ function PasswordForm() {
           <PasswordInput required minLength={6} autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} />
         </div>
       </div>
-      {msg && (
-        <p className={`rounded-lg text-sm font-semibold px-4 py-3 ${msg.ok ? "bg-good/10 text-good" : "bg-bad/10 text-bad"}`}>{msg.text}</p>
-      )}
       <button disabled={!cur || next.length < 6 || busy} className="btn btn-navy !px-8 disabled:opacity-40 disabled:cursor-not-allowed">
         {busy ? "Updating…" : "Update password"}
       </button>

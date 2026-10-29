@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth";
+import { useToast } from "@/components/Toast";
 import { api } from "@/lib/api";
 import { useApi } from "@/lib/useApi";
 import { formatPKR } from "@/lib/data";
@@ -20,7 +21,7 @@ export default function RoomPicker({ hotel, initialIn = "", initialOut = "", onB
   const [guests, setGuests] = useState(2);
   const [picked, setPicked] = useState(null);
   const [booking, setBooking] = useState(null); // confirmed booking from the API
-  const [error, setError] = useState("");
+  const toast = useToast();
   const [busy, setBusy] = useState(false);
 
   const hasDates = checkIn && checkOut;
@@ -38,11 +39,9 @@ export default function RoomPicker({ hotel, initialIn = "", initialOut = "", onB
     setCheckIn(i);
     setCheckOut(o);
     setBooking(null);
-    setError("");
   };
 
   const reserve = async () => {
-    setError("");
     setBusy(true);
     try {
       const { booking } = await api("/api/bookings", {
@@ -50,10 +49,11 @@ export default function RoomPicker({ hotel, initialIn = "", initialOut = "", onB
         body: { hotelId: hotel.id, roomType: room.name, checkIn, checkOut, guests: Number(guests) || 1 },
       });
       setBooking(booking);
+      toast.success("The hotel will confirm it shortly.", "Booking request sent");
       reload();
       onBooked?.();
     } catch (e) {
-      setError(e.message);
+      toast.error(e.message, "Could not book");
       reload();
     } finally {
       setBusy(false);
@@ -99,7 +99,7 @@ export default function RoomPicker({ hotel, initialIn = "", initialOut = "", onB
                 </div>
                 <button
                   disabled={out}
-                  onClick={() => { setPicked(r.name); setBooking(null); setError(""); }}
+                  onClick={() => { setPicked(r.name); setBooking(null); }}
                   className={`btn md:mt-3 ${out ? "bg-line text-mute cursor-not-allowed" : active ? "btn-navy" : "btn-ghost"}`}
                 >
                   {out ? "Unavailable" : active ? "Selected" : "Select"}
@@ -140,7 +140,6 @@ export default function RoomPicker({ hotel, initialIn = "", initialOut = "", onB
                   )}
                 </div>
               </div>
-              {error && <p className="mt-4 rounded-lg bg-bad/10 text-bad text-sm font-semibold px-4 py-3">{error}</p>}
             </>
           )}
         </div>

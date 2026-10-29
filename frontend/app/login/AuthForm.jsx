@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth";
+import { useToast } from "@/components/Toast";
 import { IconCheck } from "@/components/Icons";
 import PasswordInput from "@/components/PasswordInput";
 
@@ -12,14 +13,13 @@ export default function AuthForm() {
   const { login, register } = useAuth();
   const [signup, setSignup] = useState(params.get("mode") === "signup");
   const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [error, setError] = useState("");
+  const toast = useToast();
   const [busy, setBusy] = useState(false);
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   const submit = async (e) => {
     e.preventDefault();
-    setError("");
     setBusy(true);
     try {
       if (signup) await register(form.name, form.email, form.password);
@@ -28,7 +28,7 @@ export default function AuthForm() {
       // only follow same-site paths, never an external address
       router.push(next.startsWith("/") && !next.startsWith("//") ? next : "/");
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message, signup ? "Could not create account" : "Could not sign in");
       setBusy(false);
     }
   };
@@ -59,12 +59,10 @@ export default function AuthForm() {
           <h1 className="font-display font-extrabold text-3xl">{signup ? "Create your account" : "Sign in"}</h1>
           <p className="text-sm text-mute mt-2">
             {signup ? "Already registered?" : "New to Stayfield?"}{" "}
-            <button type="button" onClick={() => { setSignup(!signup); setError(""); }} className="font-bold text-navy underline underline-offset-4">
+            <button type="button" onClick={() => { setSignup(!signup); }} className="font-bold text-navy underline underline-offset-4">
               {signup ? "Sign in" : "Create an account"}
             </button>
           </p>
-
-          {error && <p className="mt-5 rounded-lg bg-bad/10 text-bad text-sm font-semibold px-4 py-3">{error}</p>}
 
           <div className="mt-6 space-y-4">
             {signup && (

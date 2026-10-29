@@ -7,6 +7,7 @@ import Select from "@/components/Select";
 import { cities, types } from "@/lib/data";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useToast } from "@/components/Toast";
 import { IconPlus } from "@/components/Icons";
 import { shrinkImage } from "@/lib/image";
 
@@ -19,7 +20,7 @@ function Form() {
   const [amenities, setAmenities] = useState([]);
   const [roomTypes, setRoomTypes] = useState([{ name: "", price: "", count: "" }]);
   const [files, setFiles] = useState([]);
-  const [error, setError] = useState("");
+  const toast = useToast();
   const [busy, setBusy] = useState(false);
   const [photoBusy, setPhotoBusy] = useState(false);
   const [done, setDone] = useState(null);
@@ -39,10 +40,9 @@ function Form() {
     e.target.value = "";
     const bad = picked.find((file) => !["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 15 * 1024 * 1024);
     if (bad) {
-      setError(`"${bad.name}" is not allowed. Use JPG, PNG or WebP under 15 MB.`);
+      toast.error(`"${bad.name}" is not allowed. Use JPG, PNG or WebP under 15 MB.`, "Photo not added");
       return;
     }
-    setError("");
     setPhotoBusy(true);
     const small = await Promise.all(picked.map((file) => shrinkImage(file)));
     setPhotoBusy(false);
@@ -64,7 +64,6 @@ function Form() {
   const submit = async (e) => {
     e.preventDefault();
     if (missing.length) return;
-    setError("");
     setBusy(true);
     try {
       const data = {
@@ -85,8 +84,9 @@ function Form() {
       const { hotel } = await api("/api/hotels", { method: "POST", form });
       await refresh(); // account is now an owner
       setDone(hotel);
+      toast.success("Your property is now live.", "Property listed");
     } catch (err) {
-      setError(err.message);
+      toast.error(err.message, "Could not list property");
     } finally {
       setBusy(false);
     }
@@ -210,7 +210,6 @@ function Form() {
         {photoBusy && <p className="text-sm text-mute">Preparing photos…</p>}
       </div>
 
-      {error && <p className="rounded-lg bg-bad/10 text-bad text-sm font-semibold px-4 py-3">{error}</p>}
       <div className="flex flex-wrap items-center gap-4">
         <button disabled={!canSubmit} className="btn btn-amber !py-3.5 !px-8 disabled:opacity-40 disabled:cursor-not-allowed">
           {busy ? "Submitting…" : "Submit property"}

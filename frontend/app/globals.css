@@ -159,6 +159,13 @@ label:has(input:disabled) {
 .card-link { transition: border-color 0.2s; }
 .card-link:hover { border-color: rgb(15 27 45 / 0.45); }
 
+/* ---------- Toasts ---------- */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.toast-in { animation: toast-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
 /* ---------- Loading shimmer ---------- */
 @keyframes shimmer {
   from { background-position: 200% 0; }
@@ -221,6 +228,6 @@ label:has(input:disabled) {
 
 @media (prefers-reduced-motion: reduce) {
   .rise, .pop-in { opacity: 1; animation: none; }
-  .float-a, .float-b, .kenburns, .word-in, .ping-dot, .drift, .sk { animation: none; }
+  .float-a, .float-b, .kenburns, .word-in, .ping-dot, .drift, .sk, .toast-in { animation: none; }
   .bar-fill { animation: none; width: 100%; }
 }

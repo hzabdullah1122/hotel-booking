@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useApi } from "@/lib/useApi";
 import { api, imgUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useToast } from "@/components/Toast";
 import { formatPKR } from "@/lib/data";
 import { IconStar, IconPin, IconCheck, IconBed } from "@/components/Icons";
 import RoomPicker from "./RoomPicker";
@@ -16,19 +17,18 @@ function Reviews({ hotelId, onChanged }) {
   const { data, loading, reload } = useApi(`/api/hotels/${hotelId}/reviews`);
   const [score, setScore] = useState(9);
   const [text, setText] = useState("");
-  const [msg, setMsg] = useState({ type: "", text: "" });
+  const toast = useToast();
 
   const submit = async (e) => {
     e.preventDefault();
-    setMsg({ type: "", text: "" });
     try {
       await api(`/api/hotels/${hotelId}/reviews`, { method: "POST", body: { score, text } });
       setText("");
-      setMsg({ type: "ok", text: "Thanks, your review is posted." });
+      toast.success("Thanks, your review is posted.", "Review posted");
       reload();
       onChanged?.();
     } catch (err) {
-      setMsg({ type: "err", text: err.message });
+      toast.error(err.message, "Could not post review");
     }
   };
 
@@ -73,7 +73,6 @@ function Reviews({ hotelId, onChanged }) {
           <textarea rows={2} maxLength={1000} className="field" placeholder="What did you like?" value={text} onChange={(e) => setText(e.target.value)} />
           <div className="flex items-center gap-4">
             <button className="btn btn-navy !py-2">Post review</button>
-            {msg.text && <p className={`text-sm font-semibold ${msg.type === "ok" ? "text-good" : "text-bad"}`}>{msg.text}</p>}
           </div>
         </form>
       )}
